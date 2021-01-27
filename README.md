@@ -5,4 +5,4 @@
 
 ## Connect with me:
 
-[Twitter]: (https://twitter.com/the_DarrenSeet)
+[Twitter](https://twitter.com/the_DarrenSeet)
