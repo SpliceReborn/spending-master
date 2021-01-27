@@ -5,7 +5,4 @@
 
 ## Connect with me:
 
-[<img align="left" alt="the_DarrenSeet | Twitter" width="22px" src="https://cdn.jsdelivr.net/npm/simple-icons@v3/icons/twitter.svg" />][twitter]
-<br />
-<br />
-[twitter]: https://twitter.com/the_DarrenSeet
+[Twitter]: (https://twitter.com/the_DarrenSeet)
