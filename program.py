@@ -1,5 +1,8 @@
+import sys
 from datetime import date
 from datetime import datetime
+import record
+from record import Record
 
 choice = input("Add(a), View(v), or Quit(q)? ")
 while choice in ["a", "A", "v", "V"]:
@@ -21,10 +24,17 @@ while choice in ["a", "A", "v", "V"]:
             # the comma behind it separates the string, since later we will access individual components separated by comma
             reader.write(str(today) + ", " + description + ", " + spended + ", \r\n")
     elif choice in ["v", "V"]:
-        currency_choice = input("MYR(m)/GBP(g)/All(a) records? ")
-        while currency_choice not in ["m", "M", "g", "G", "a", "A"]:
-            currency_choice = input("Please enter m for MYR, g for GBP records, or a for all records: ")
-        sum = 0 # Variable that stores sum of spending in a given period
+        currency_input = input("MYR(m)/GBP(g)/Both(b) records? ")
+        while currency_input not in ["m", "M", "g", "G", "b", "B"]:
+            currency_input = input("Please enter m for MYR, g for GBP records, or b for both records: ")
+        if currency_input in ["b","B"]:
+            currency_choice = "both"
+        elif currency_input in ["m", "M"]:
+            currency_choice = "MYR"
+        elif currency_input in ["g", "G"]:
+            currency_choice = "GBP"
+        sum_myr = 0 
+        sum_gbp = 0
         view_range = input("View weekly/monthly/all records? (w/m/a): ")
         # View this week's entries
         if view_range in ["w", "W"]:
@@ -32,49 +42,22 @@ while choice in ["a", "A", "v", "V"]:
             print("Here are your recorded spendings this week")
             with open('/home/splicefire/Projects/Python/Finance/spendings.txt', 'r') as reader:
                 line = reader.readline()
-                # (1) split the line based on comma and store the components into list
-                #        i.e.['27 Jan 2021', 'description', 'RMxx.xx', '\r\n'] (The last component is useless, do not print)
-                # (2) compare spend_date with today's date (to see if it's within specified range)
-                # (3) if the entry is within specified range:
-                #     a) print the entry (line_list[0][0:6] basically just prints the day and month, and not the year)
-                #     b) add the spent amount to the sum
-                if currency_choice in ["a", "A"]:
-                    sum_gbp = 0
-                    while line != '':
-                        line_list = line.split(', ')
-                        spend_date = line_list[0]
-                        datetime_obj = (datetime.strptime(spend_date, "%d %b %Y"))
-                        if (date.today() - datetime_obj.date()).days <= 7:
-                            print(line_list[0][0:6] + ": " +  "Spent " + line_list[2] + " on " + line_list[1])
-                        if line_list[2][0:1] == "R":
-                            sum += float(line_list[2][2:len(line_list[2])])
+                while line != "":
+                    entry = Record(*line.split(', '))
+                    if entry.within_week() and (entry.currency == currency_choice or currency_choice == "both"):
+                        print(entry.show())
+                        if entry.currency == "MYR":
+                            sum_myr += entry.amount
                         else:
-                            sum_gbp += float(line_list[2][1:len(line_list[2])])
-                        line = reader.readline()
-                    print("Total: " + str("RM{:,.2f}".format(sum)) + "  " + str("£{:.2f}".format(sum_gbp)))
-                elif currency_choice in ["m", "M"]:
-                    while line != '':
-                        line_list = line.split(', ')
-                        if line_list[2][0:2] == "RM":
-                            spend_date = line_list[0]
-                            datetime_obj = (datetime.strptime(spend_date, "%d %b %Y"))
-                            if (date.today() - datetime_obj.date()).days <= 7:
-                                print(line_list[0][0:6] + ": " +  "Spent " + line_list[2] + " on " + line_list[1])
-                            sum += float(line_list[2][2:len(line_list[2])])
-                        line = reader.readline()
-                    print("Total: " + str("RM{:,.2f}".format(sum)))
-                elif currency_choice in ["g", "G"]:
-                    while line != '':
-                        line_list = line.split(', ')
-                        if line_list[2][0:1] == "£":
-                            spend_date = line_list[0]
-                            datetime_obj = (datetime.strptime(spend_date, "%d %b %Y"))
-                            if (date.today() - datetime_obj.date()).days <= 7:
-                                print(line_list[0][0:6] + ": " +  "Spent " + line_list[2] + " on " + line_list[1])
-                            sum += float(line_list[2][1:len(line_list[2])])
-                        line = reader.readline()
-                    print("Total: " + str("£{:,.2f}".format(sum)))
-            print("\n")
+                            sum_gbp += entry.amount
+                    line = reader.readline()
+                if currency_choice == "both":
+                    print("Total: " + str("RM{:,.2f}".format(sum_myr)) + "  " + str("£{:.2f}".format(sum_gbp)))
+                elif currency_choice == "MYR":
+                    print("Total: " + str("RM{:,.2f}".format(sum_myr)))
+                else:
+                    print("Total: " + str("£{:,.2f}".format(sum_gbp)))
+                print("\n")
         # To be added monthly entries
         elif view_range in ["m", "M"]:
             print("Nothing yet")
@@ -85,33 +68,21 @@ while choice in ["a", "A", "v", "V"]:
             # Same as the above blocks, except we do not check date range of entries
             with open('/home/splicefire/Projects/Python/Finance/spendings.txt', 'r') as reader:
                 line = reader.readline()
-                if currency_choice in ["a", "A"]:
-                    sum_gbp = 0
-                    while line != '':
-                        line_list = line.split(', ')
-                        print(line_list[0][0:6] + ": " +  "Spent " + line_list[2] + " on " + line_list[1])
-                        if line_list[2][0:1] == "R":
-                            sum += float(line_list[2][2:len(line_list[2])])
+                while line != "":
+                    entry = Record(*line.split(', '))
+                    if entry.currency == currency_choice or currency_choice == "both":
+                        print(entry.show())
+                        if entry.currency == "MYR":
+                            sum_myr += entry.amount
                         else:
-                            sum_gbp += float(line_list[2][1:len(line_list[2])])
-                        line = reader.readline()
-                    print("Total: " + str("RM{:,.2f}".format(sum)) + "  " + str("£{:.2f}".format(sum_gbp)))
-                elif currency_choice in ["m", "M"]:
-                    while line != '':
-                        line_list = line.split(', ')
-                        if line_list[2][0:2] == "RM":
-                            print(line_list[0][0:6] + ": " +  "Spent " + line_list[2] + " on " + line_list[1])
-                            sum += float(line_list[2][2:len(line_list[2])])
-                        line = reader.readline()
-                    print("Total: " + str("RM{:,.2f}".format(sum)))
-                elif currency_choice in ["g", "G"]:
-                    while line != '':
-                        line_list = line.split(', ')
-                        if line_list[2][0:1] == "£":
-                            print(line_list[0][0:6] + ": " +  "Spent " + line_list[2] + " on " + line_list[1])
-                            sum += float(line_list[2][1:len(line_list[2])])
-                        line = reader.readline()
-                    print("Total: " + str("£{:,.2f}".format(sum)))
+                            sum_gbp += entry.amount
+                    line = reader.readline()
+                if currency_choice == "both":
+                    print("Total: " + str("RM{:,.2f}".format(sum_myr)) + "  " + str("£{:.2f}".format(sum_gbp)))
+                elif currency_choice == "MYR":
+                    print("Total: " + str("RM{:,.2f}".format(sum_myr)))
+                else:
+                    print("Total: " + str("£{:,.2f}".format(sum_gbp)))
             print("\n")
         else:
             continue
