@@ -51,13 +51,6 @@ while choice in ["a", "A", "v", "V"]:
                         else:
                             sum_gbp += entry.amount
                     line = reader.readline()
-                if currency_choice == "both":
-                    print("Total: " + str("RM{:,.2f}".format(sum_myr)) + "  " + str("£{:.2f}".format(sum_gbp)))
-                elif currency_choice == "MYR":
-                    print("Total: " + str("RM{:,.2f}".format(sum_myr)))
-                else:
-                    print("Total: " + str("£{:,.2f}".format(sum_gbp)))
-                print("\n")
         # To be added monthly entries
         elif view_range in ["m", "M"]:
             print("Nothing yet")
@@ -77,15 +70,16 @@ while choice in ["a", "A", "v", "V"]:
                         else:
                             sum_gbp += entry.amount
                     line = reader.readline()
-                if currency_choice == "both":
-                    print("Total: " + str("RM{:,.2f}".format(sum_myr)) + "  " + str("£{:.2f}".format(sum_gbp)))
-                elif currency_choice == "MYR":
-                    print("Total: " + str("RM{:,.2f}".format(sum_myr)))
-                else:
-                    print("Total: " + str("£{:,.2f}".format(sum_gbp)))
-            print("\n")
         else:
             continue
+        if currency_choice == "both":
+            print("Total: " + str("RM{:,.2f}".format(sum_myr)) + "  " + str("£{:.2f}".format(sum_gbp)))
+        elif currency_choice == "MYR":
+            print("Total: " + str("RM{:,.2f}".format(sum_myr)))
+        else:
+            print("Total: " + str("£{:,.2f}".format(sum_gbp)))
+        print("\n")
+
     choice = input("Add(a), View(v), or Quit(q)? ")
 print("Program terminating...")
       
