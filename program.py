@@ -1,8 +1,12 @@
-import sys
+import sqlite3
 from datetime import date
 from datetime import datetime
 import record
 from record import Record
+
+connection = sqlite3.connect("database.db")
+cursor = connection.cursor()
+# cursor.execute("CREATE TABLE records (date DATE, description TEXT, amount REAL)")
 
 choice = input("Add(a), View(v), or Quit(q)? ")
 while choice in ["a", "A", "v", "V"]:
