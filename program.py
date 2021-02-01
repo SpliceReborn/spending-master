@@ -3,7 +3,7 @@ from datetime import date
 from datetime import datetime
 
 # Connection to sqlite3, will create database.db file if not exists
-connection = sqlite3.connect("database.db")
+connection = sqlite3.connect("/home/splicefire/Projects/Python/Finance/database.db")
 cursor = connection.cursor()
 cursor.execute("CREATE TABLE IF NOT EXISTS records (date TEXT, description TEXT, currency TEXT, amount TEXT)")
 
@@ -44,7 +44,8 @@ while choice in ["a", "A", "v", "V"]:
             execute_string = "SELECT date, description, currency, amount FROM records WHERE currency = ' £'"
         sum_myr = 0 
         sum_gbp = 0
-
+        myr_string = "SELECT sum(amount) FROM records WHERE currency = 'RM'"
+        gbp_string = "SELECT sum(amount) FROM records WHERE currency = ' £'"
         view_range = input("View weekly/monthly/all records? (w/m/a): ")
         # format query for selecting weekly entries 
         if view_range in ["w", "W"]:
@@ -52,6 +53,8 @@ while choice in ["a", "A", "v", "V"]:
                 execute_string += " WHERE date >= date('now', '-7 days')"
             else:
                 execute_string += " AND date >= date('now', '-7 days')"
+            myr_string += " AND date >= date('now', '-7 days')"
+            gbp_string += " AND date >= date('now', '-7 days')"
             print("\n")
             print("Here are your recorded spendings this week")
         # format query for selecting monthly entries 
@@ -60,6 +63,8 @@ while choice in ["a", "A", "v", "V"]:
                 execute_string += " WHERE strftime('%m', date) = strftime('%m', 'now')"
             else:
                 execute_string += " AND strftime('%m', date) = strftime('%m', 'now')"
+            myr_string += " AND strftime('%m', date) = strftime('%m', 'now')"
+            gbp_string += " AND strftime('%m', date) = strftime('%m', 'now')"
             print("Here are your recorded spendings this month")
         # format query for selecting all entries 
         elif view_range in ["a", "A"]:
@@ -72,8 +77,8 @@ while choice in ["a", "A", "v", "V"]:
         formatted_result = [f"{datetime.strptime(date, '%Y-%m-%d').date().strftime('%d %b'):<12}{description:<50}{currency:>2} {'{:.2f}'.format(float(amount)):>5}" for date, description, currency, amount in cursor.fetchall()]
         date, description, price = "Date", "Description", "Price"
         print('\n'.join([f"{date:<12}{description:<50}{price:>5}"] + formatted_result))
-        sum_myr = cursor.execute("SELECT sum(amount) FROM records WHERE currency = 'RM'").fetchone()[0]
-        sum_gbp = cursor.execute("SELECT sum(amount) FROM records WHERE currency = ' £'").fetchone()[0]
+        sum_myr = cursor.execute(myr_string).fetchone()[0]
+        sum_gbp = cursor.execute(gbp_string).fetchone()[0]
         print("\n")
 
         # Show sum of output entries
