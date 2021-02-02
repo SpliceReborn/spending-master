@@ -91,6 +91,7 @@ while choice in ["a", "A", "v", "V"]:
         print("\n")
 
     choice = input("Add(a), View(v), or Quit(q)? ")
+connection.close()
 print("Program terminating...")
       
 
